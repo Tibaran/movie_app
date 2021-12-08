@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
+
 import './models/movieModel.dart';
 import './models/tmdb.dart';
 import './models/movieShowingsModel.dart';
 import './models/tms.dart';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:intl/intl.dart';
 import 'movieDetails.dart';
@@ -35,42 +38,27 @@ class _MyMovieApp extends State<MyMovieApp> {
   bool loadedUpcoming = false; 
   bool loadedPopular = false; 
   bool loadedTop = false;
-
-  
   bool loadedShows = false;
 
   int heroTag = 0;
   int _currentIdex = 0;
-
   
-  //static final DateTime now = DateTime.now();
-  //static final DateFormat formatter = DateFormat('yyyy-MM-dd');
-  //String _currentDate = formatter.format(now);
-  //final Widget _body = const Scaffold(body: Center(child: CircularProgressIndicator(),),);
-
   @override
   void initState() {
     super.initState();
     _fetchShowtimeMovies();
     _fillMoviesLists();
   }
-
+  
+  // Executes all movies filler functions
   Future<void> _fillMoviesLists() async{
     _fetchNowPlayingMovies();
     _fetchUpcomingMovies();
     _fetchPopularMovies();
     _fetchTopRatedMovies();
   }
-
-  Future<void> _fetchShowtimeMovies() async {
-    var response = await http.get(Uri.parse(Tms.testUrlD));
-    var decodeJson = jsonDecode(response.body);
-    setState(() {
-      showtimesM = Shows.fromJson(decodeJson);
-      loadedShows = true;
-    });
-  }
-
+  
+  // Now Playing movies
   Future<void> _fetchNowPlayingMovies() async {
     var response = await http.get(Uri.parse(Tmdb.nowPlayingUrl));
     var decodeJson = jsonDecode(response.body);
@@ -79,8 +67,8 @@ class _MyMovieApp extends State<MyMovieApp> {
       loadedPlaying = true;
     });
   }
-  
 
+  // Upcoming Movies
   Future<void> _fetchUpcomingMovies() async {
     var response = await http.get(Uri.parse(Tmdb.upcomingUrl));
     var decodeJson = jsonDecode(response.body);
@@ -89,7 +77,7 @@ class _MyMovieApp extends State<MyMovieApp> {
       loadedUpcoming = true;
     });
   }
-
+  // Popular Movies
   Future<void> _fetchPopularMovies() async {
     var response = await http.get(Uri.parse(Tmdb.popularUrl));
     var decodeJson = jsonDecode(response.body);
@@ -99,6 +87,7 @@ class _MyMovieApp extends State<MyMovieApp> {
     });
   }
 
+  // Top Rated Movies
   Future<void> _fetchTopRatedMovies() async {
     var response = await http.get(Uri.parse(Tmdb.topRatedUrl));
     var decodeJson = jsonDecode(response.body);
@@ -107,6 +96,50 @@ class _MyMovieApp extends State<MyMovieApp> {
       loadedTop = true;
     });
   }
+
+  // Fetch Movies Showtimes near 1km 
+  Future<void> _fetchShowtimeMovies() async {
+    Position currentLocation = await _getGeoLocationPosition();
+    var response = await http.get(Uri.parse(Tms.getUrl(currentLocation.latitude.toString(), currentLocation.longitude.toString())));
+    var decodeJson = jsonDecode(response.body);
+    setState(() {
+      showtimesM = Shows.fromJson(decodeJson);
+      loadedShows = true;
+    });
+  }
+
+  // Get Location from deviece
+  Future<Position> _getGeoLocationPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      await Geolocator.openLocationSettings();
+      return Future.error('Location services are disabled.');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+      
+        return Future.error('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  }
+
+  // ListView Builders VistaPrincipal
 
   Widget _buildCarouselSlider() => CarouselSlider(
         items: nowPlayingMovies == null
@@ -119,8 +152,9 @@ class _MyMovieApp extends State<MyMovieApp> {
            height: 240.0,
            viewportFraction: 0.5,
          ),
-      );
-
+  );
+  
+  // Builds Image poster and adds onTap movieDetail
   Widget _buildMovieItem(Results movieItem) {
     heroTag += 1;
     movieItem.heroTag = heroTag;
@@ -139,6 +173,7 @@ class _MyMovieApp extends State<MyMovieApp> {
             )));
   }
 
+  // Builds Item for the list with Image Poster and Movie Title
   Widget _buildMovieListItem(Results movieItem) => Material(
         child: Container(
             width: 128.0,
@@ -166,6 +201,7 @@ class _MyMovieApp extends State<MyMovieApp> {
             )),
       );
 
+  // Build the List needs list of movies and section title
   Widget _buildMoviesListView(Movie movie, String movieListTitle) => Container(
         height: 258.0,
         padding:const EdgeInsets.only(top: 10.0, bottom: 10.00),
@@ -204,7 +240,7 @@ class _MyMovieApp extends State<MyMovieApp> {
 
   @override
   Widget build(BuildContext context) {
-    return  FutureBuilder<void>(
+    return  FutureBuilder<void>( //FutureBuilder chooses wich widget to load
         future: _fillMoviesLists(),
         builder: (BuildContext context, AsyncSnapshot<void> snapshot){
           Widget body;
@@ -233,45 +269,10 @@ class _MyMovieApp extends State<MyMovieApp> {
       );
   }
 
-  AppBar cabezeraSuperior(){
-    return AppBar(
-        elevation: 0.0,
-        title: const Text(
-          'Movie App',
-          style: TextStyle(
-              color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        leading: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.search), 
-            onPressed: () {},
-          )
-        ],
-      );
-  }
-
-  BottomNavigationBar menuInferior(){
-    return BottomNavigationBar(
-          fixedColor: Colors.lightBlue,
-          currentIndex: _currentIdex,
-          onTap: (int index) {
-            setState(() => _currentIdex = index);
-          },
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.local_movies), label: 'All movies'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.local_activity), label: 'Nearby Movies'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person), label: 'Account'),
-          ]);
-  }
-
+  // Our Hompage
   Widget vistaPrincipal(){
     return Scaffold(
-      appBar: cabezeraSuperior(),
+      appBar: appBar(),
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBookIsScrolled) {
           return <Widget>[
@@ -319,13 +320,14 @@ class _MyMovieApp extends State<MyMovieApp> {
         ]),
       ),
       // Navegacion inferior
-      bottomNavigationBar: menuInferior(),
+      bottomNavigationBar: bottomBar(),
     );
   }
 
+  // Widget, shows movies playing in theaters around 1km
   Widget nearbyMovies(){
     return Scaffold(
-      appBar: cabezeraSuperior(),
+      appBar: appBar(),
       body: ListView.builder(
         shrinkWrap: true,
         itemCount: showtimesM.movies!.length,
@@ -352,18 +354,19 @@ class _MyMovieApp extends State<MyMovieApp> {
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
-                            children: tiempos(theaterTime.showtimes!),)
+                            children: times(theaterTime.showtimes!),)
                         ),
                       ],
-                      );
+                    );
                   })
               ],),
           );
         }),
-      bottomNavigationBar: menuInferior(),
+      bottomNavigationBar: bottomBar(),
     );
   }
-  List<Widget> tiempos(List<Showtimes> tiempos){
+  // Fills a list with the movie showtimes with their fandango ticket.
+  List<Widget> times(List<Showtimes> tiempos){
     List<Widget> elementos = [];
     for(var t in tiempos){
       elementos.add(
@@ -375,6 +378,7 @@ class _MyMovieApp extends State<MyMovieApp> {
     }
     return elementos;
   }
+  // Launches the link of the showtime
   _launchURL(String destino) async {
   var url = destino;
   if (await canLaunch(url)) {
@@ -383,50 +387,51 @@ class _MyMovieApp extends State<MyMovieApp> {
     throw 'Nos se puedo lanzar $url';
   }
 }
-  /*
-  ListView.builder(
-        padding: const EdgeInsets.all(8),
-        itemCount: showtimesM.movies!.length,
-        itemBuilder: (BuildContext context, int index) {
-          var showItem = showtimesM.movies!.elementAt(index);
-          return Container(
-            child: Column(
-              children: [
-                Text(showItem.title!),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: ClampingScrollPhysics(),
-                  itemCount: showItem.theaters!.length,
-                  itemBuilder: (BuildContext context, int index){
-                    var theaterTime = showItem.theaters!.elementAt(index);
-                    return Column(
-                      children: [
-                        Text(theaterTime.theater!),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: ClampingScrollPhysics(),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: theaterTime.showtimes!.length,
-                          itemBuilder: (BuildContext context, int index){
-                            var showtime = theaterTime.showtimes!.elementAt(index);
-                            return TextButton(
-                              onPressed: (){print(showtime.dateTime!);}, 
-                              child: Text(showtime.dateTime!));
-                          })
-                      ],
-                      );
-                  })
-              ],),
-          );
-        })
-  */
 
   Widget accountWidget(){
     return Scaffold(
-      appBar: cabezeraSuperior(),
+      appBar: appBar(),
       body: const Text("Cuenta"),
       // Navegacion inferior
-      bottomNavigationBar: menuInferior(),
+      bottomNavigationBar: bottomBar(),
     );
+  }
+
+  // Our Apps Appbar
+  AppBar appBar(){
+    return AppBar(
+        elevation: 0.0,
+        title: const Text(
+          'Movie App',
+          style: TextStyle(
+              color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        leading: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.search), 
+            onPressed: () {},
+          )
+        ],
+      );
+  }
+
+  // Our BottomNavigationBar
+  BottomNavigationBar bottomBar(){
+    return BottomNavigationBar(
+          fixedColor: Colors.lightBlue,
+          currentIndex: _currentIdex,
+          onTap: (int index) {
+            setState(() => _currentIdex = index);
+          },
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.local_movies), label: 'All movies'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.local_activity), label: 'Nearby Movies'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person), label: 'Account'),
+          ]);
   }
 }

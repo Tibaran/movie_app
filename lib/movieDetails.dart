@@ -36,7 +36,7 @@ class _MovieDetails extends State<MovieDetail> {
     _fetchMovieDetail();
     _fetchMovieCredit();
   }
-
+  // Fetch especific movie details
   void _fetchMovieDetail() async {
     var response = await http.get(Uri.parse(movieDetailUrl!));
     var decodeJson = jsonDecode(response.body);
@@ -45,6 +45,7 @@ class _MovieDetails extends State<MovieDetail> {
     });
   }
 
+  // Fetch especific movie credits (crew and cast)
   void _fetchMovieCredit() async {
     setState(() {
       isLoading = true;
@@ -71,6 +72,7 @@ class _MovieDetails extends State<MovieDetail> {
     });
   }
 
+  // converts runtime format, 120 to 2h 00min 
   String _getMovieDuration(int runtime) {
     if (runtime == null) return 'No data';
     double movieHours = runtime / 60;
@@ -80,7 +82,7 @@ class _MovieDetails extends State<MovieDetail> {
 
   Widget _buildCastCrewContent(String personType) => Container(
         height: 115.0,
-        padding: EdgeInsets.only(top: 8.0),
+        padding: const EdgeInsets.only(top: 8.0),
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.1),
         ),
@@ -103,19 +105,19 @@ class _MovieDetails extends State<MovieDetail> {
                     : castCrew
                         .where((f) => f.personType == personType)
                         .map((c) => Padding(
-                              padding: EdgeInsets.only(left: 4.0),
+                              padding: const EdgeInsets.only(left: 4.0),
                               child: Container(
                                 width: 65.0,
                                 child: Column(
                                   children: <Widget>[
-                                    CircleAvatar(
+                                    const CircleAvatar(
                                         radius: 28.0,
-                                        backgroundImage: const AssetImage('assets/nobody.jpg')),
+                                        backgroundImage: AssetImage('assets/nobody.jpg')),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 4.0),
                                       child: Text(
                                         c.name!,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 8.0,
                                             fontWeight: FontWeight.bold),
                                         overflow: TextOverflow.ellipsis,
@@ -123,7 +125,7 @@ class _MovieDetails extends State<MovieDetail> {
                                     ),
                                     Text(
                                       c.subName!,
-                                      style: TextStyle(fontSize: 8.0),
+                                      style: const TextStyle(fontSize: 8.0),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],

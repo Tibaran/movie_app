@@ -47,7 +47,7 @@ class Results {
   bool? video;
   double? voteAverage;
   String? title;
-  double? popularity;
+  String? popularity;
   String? posterPath;
   String? originalLanguage;
   String? originalTitle;
@@ -80,7 +80,7 @@ class Results {
     video = json['video'];
     //voteAverage = json['vote_average'];
     title = json['title'];
-    popularity = json['popularity'];
+    popularity = "${json['popularity']}";
     posterPath = json['poster_path'];
     originalLanguage = json['original_language'];
     originalTitle = json['original_title'];
