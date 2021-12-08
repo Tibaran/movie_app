@@ -112,8 +112,8 @@ class Results {
 }
 
 class Dates {
-  String? maximum;
-  String? minimum;
+  String? maximum; // 2017
+  String? minimum; // 2016
 
   Dates({this.maximum, this.minimum});
 

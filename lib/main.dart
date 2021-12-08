@@ -38,6 +38,7 @@ class _MyMovieApp extends State<MyMovieApp> {
   bool loadedUpcoming = false; 
   bool loadedPopular = false; 
   bool loadedTop = false;
+  
   bool loadedShows = false;
 
   int heroTag = 0;
@@ -248,8 +249,6 @@ class _MyMovieApp extends State<MyMovieApp> {
             body = vistaPrincipal();
           }else if (loadedShows && _currentIdex==1){
             body = nearbyMovies();
-          }else if (_currentIdex==2){
-            body = accountWidget();
           }else if (snapshot.hasError){
             body = const Scaffold(
                body: Center(
@@ -406,14 +405,7 @@ class _MyMovieApp extends State<MyMovieApp> {
           style: TextStyle(
               color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
         ),
-        centerTitle: true,
-        leading: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.search), 
-            onPressed: () {},
-          )
-        ],
+        centerTitle: true
       );
   }
 
@@ -430,8 +422,6 @@ class _MyMovieApp extends State<MyMovieApp> {
                 icon: Icon(Icons.local_movies), label: 'All movies'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.local_activity), label: 'Nearby Movies'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person), label: 'Account'),
           ]);
   }
 }

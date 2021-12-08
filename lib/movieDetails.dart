@@ -110,9 +110,11 @@ class _MovieDetails extends State<MovieDetail> {
                                 width: 65.0,
                                 child: Column(
                                   children: <Widget>[
-                                    const CircleAvatar(
+                                     CircleAvatar(
                                         radius: 28.0,
-                                        backgroundImage: AssetImage('assets/nobody.jpg')),
+                                        backgroundImage: c.imagePath != null ? NetworkImage("${Tmdb.baseImageUrl}w154${c.imagePath}") as ImageProvider : AssetImage('assets/nobody.jpg'),
+                                        backgroundColor: Colors.transparent, 
+                                      ),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 4.0),
                                       child: Text(
