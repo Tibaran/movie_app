@@ -179,15 +179,6 @@ class _MovieDetails extends State<MovieDetail> {
           Text(
               "Release Date: ${DateFormat('dd-MM-yyyy').format(DateTime.parse(widget.movie!.releaseDate!))}",
               style: TextStyle(fontSize: 11.0)),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              shape: const StadiumBorder(),
-              elevation: 15.0,
-              primary: Colors.red[700],
-              ),
-            child: const Text('Tickets'),
-            onPressed: () {},
-          ),
         ]);
 
     final genresList = Container(

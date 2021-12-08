@@ -38,7 +38,7 @@ class _MyMovieApp extends State<MyMovieApp> {
   bool loadedUpcoming = false; 
   bool loadedPopular = false; 
   bool loadedTop = false;
-  
+
   bool loadedShows = false;
 
   int heroTag = 0;
@@ -386,15 +386,6 @@ class _MyMovieApp extends State<MyMovieApp> {
     throw 'Nos se puedo lanzar $url';
   }
 }
-
-  Widget accountWidget(){
-    return Scaffold(
-      appBar: appBar(),
-      body: const Text("Cuenta"),
-      // Navegacion inferior
-      bottomNavigationBar: bottomBar(),
-    );
-  }
 
   // Our Apps Appbar
   AppBar appBar(){
